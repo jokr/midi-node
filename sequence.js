@@ -12,10 +12,18 @@ var fileTypes = {
 };
 
 function Sequence(params) {
-	this.tracks = new Array(params.tracks);
+	this.tracks = [];
+	this.noTracks = params.noTracks;
 	this.fileType = params.fileType;
 	this.ticks = params.ticks;
 }
+
+Sequence.prototype.addTrack = function (track) {
+	if (this.tracks.length >= this.noTracks) {
+		console.warn('Tracks exceed specified number of tracks in header field.');
+	}
+	this.tracks.push(track);
+};
 
 Sequence.prototype.getTracks = function () {
 	return this.tracks;
@@ -29,6 +37,11 @@ Sequence.prototype.getTicks = function () {
 	return this.ticks;
 };
 
+/**
+ *
+ * @param buffer
+ * @returns {Sequence}
+ */
 Sequence.fromBuffer = function (buffer) {
 	var offset = 0;
 
@@ -45,10 +58,10 @@ Sequence.fromBuffer = function (buffer) {
 	var fileType = buffer.readUInt16BE(offset);
 	offset += 2;
 
-	var tracks = buffer.readUInt16BE(offset);
+	var noTracks = buffer.readUInt16BE(offset);
 	offset += 2;
 
-	if (fileType === fileTypes.TYPE_0 && tracks !== 1) {
+	if (fileType === fileTypes.TYPE_0 && noTracks !== 1) {
 		throw new Error('Number of tracks mismatch file type (expected 1 track).');
 	}
 
@@ -58,18 +71,24 @@ Sequence.fromBuffer = function (buffer) {
 	var sequence = new Sequence({
 		fileType: fileType,
 		ticks: ticks,
-		tracks: tracks
+		noTracks: noTracks
 	});
 
-	for (var i = 0; i < tracks; i++) {
+	for (var i = 0; i < noTracks; i++) {
 		var track = Track.parseTrack(buffer.slice(offset));
-		sequence.tracks[i] = track;
+		sequence.addTrack(track);
 		offset += track.length();
 	}
 
 	return sequence;
 };
 
+/**
+ * Returns a promise of a midi sequence read directly from a stream.
+ * @param stream
+ * @see https://nodejs.org/api/stream.html
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+ */
 Sequence.fromStream = function (stream) {
 	return new Promise(function (resolve, reject) {
 		stream.on('data', function (chunk) {
@@ -82,6 +101,11 @@ Sequence.fromStream = function (stream) {
 	});
 };
 
+/**
+ * Returns a promise of a midi sequence read directly from a file.
+ * @param filename
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+ */
 Sequence.fromFile = function (filename) {
 	return Sequence.fromStream(require('fs').createReadStream(filename, 'binary'));
 };

@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-	sequence: require('./sequence'),
-	track: require('./track'),
-	message: require('./message')
+	Sequence: require('./sequence'),
+	Track: require('./track'),
+	Message: require('./message')
 };
