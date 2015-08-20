@@ -1,0 +1,18 @@
+{
+  "name": "midi-node",
+  "version": "0.1.0",
+  "description": "A midi parser and writer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --check-leaks --bail"
+  },
+  "keywords": [
+    "midi"
+  ],
+  "author": "Joel Krebs <joel.krebs@gmail.com> (www.aleaiactaest.ch)",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "nodeunit": "^0.9.1"
+  }
+}
