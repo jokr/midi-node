@@ -5,5 +5,3 @@ module.exports = {
 	track: require('./track'),
 	message: require('./message')
 };
-
-console.log(module.exports);
