@@ -98,13 +98,18 @@ Message.prototype.toString = function () {
 };
 
 /**
- * Parses a MIDI Message out of a buffer.
+ * Parses a MIDI Message out of a buffer and returns it. Returns null
+ * if there are too few bytes for the type of message.
  *
  * @param buffer
  * @param runningStatus
  * @returns {Message}
  */
-Message.parse = function (buffer, runningStatus) {
+Message.fromBuffer = function (buffer, runningStatus) {
+	if (buffer.length === 0) {
+		return null;
+	}
+
 	var status = buffer.readUInt8(0);
 	var length = 0;
 	var dataOffset = 0;
@@ -121,11 +126,18 @@ Message.parse = function (buffer, runningStatus) {
 	}
 
 	if (status === constants.META_EVENT) {
+		if (buffer.length < 3) {
+			return null;
+		}
 		length += buffer.readUInt8(2) + 2;
 	} else {
 		if (commands[status & 0xF0]) {
 			length += commands[status & 0xF0].length;
 		}
+	}
+
+	if (buffer.length < length) {
+		return null;
 	}
 
 	var data = [];

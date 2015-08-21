@@ -1,5 +1,6 @@
 'use strict';
 
+var Message = require('./message');
 var Track = require('./track');
 
 var constants = {
@@ -11,15 +12,13 @@ var fileTypes = {
 	TYPE_1: 0x1 // multi track
 };
 
-function Sequence(params) {
+function Sequence(header) {
 	this.tracks = [];
-	this.noTracks = params.noTracks;
-	this.fileType = params.fileType;
-	this.ticks = params.ticks;
+	this.header = header;
 }
 
 Sequence.prototype.addTrack = function (track) {
-	if (this.tracks.length >= this.noTracks) {
+	if (this.tracks.length >= this.header.noTracks) {
 		console.warn('Tracks exceed specified number of tracks in header field.');
 	}
 	this.tracks.push(track);
@@ -30,11 +29,11 @@ Sequence.prototype.getTracks = function () {
 };
 
 Sequence.prototype.getFileType = function () {
-	return this.fileType;
+	return this.header.fileType;
 };
 
 Sequence.prototype.getTicks = function () {
-	return this.ticks;
+	return this.header.ticks;
 };
 
 /**
@@ -75,9 +74,24 @@ Sequence.fromBuffer = function (buffer) {
 	});
 
 	for (var i = 0; i < noTracks; i++) {
-		var track = Track.parseTrack(buffer.slice(offset));
+		var track = Track.fromBuffer(buffer.slice(offset));
 		sequence.addTrack(track);
-		offset += track.length();
+		offset += 8;
+
+		var delta = parseVLV(buffer);
+		if (delta > 0x7F) {
+			offset += 2;
+		} else {
+			offset += 1;
+		}
+
+		var message = Message.fromBuffer(buffer.slice(offset));
+		if (!message) {
+			throw new Error("Unexpected end of buffer.");
+		}
+
+		track.addEvent(delta, message);
+		offset += message.length;
 	}
 
 	return sequence;
@@ -109,5 +123,18 @@ Sequence.fromStream = function (stream) {
 Sequence.fromFile = function (filename) {
 	return Sequence.fromStream(require('fs').createReadStream(filename, 'binary'));
 };
+
+function parseVLV(buffer) {
+	var delta = buffer.readUInt8(0);
+
+	if (delta & 0x80) {
+		// we will have to read two bytes
+		var leftValue = (delta & 0x7F) << 7;
+		var rightValue = buffer.readUInt8(1);
+		return leftValue | rightValue;
+	} else {
+		return delta;
+	}
+}
 
 module.exports = Sequence;
