@@ -1,16 +1,6 @@
 'use strict';
 
-var constants = {
-	META_EVENT: 0xFF,
-	END_OF_TRACK: 0x2F,
-	NOTE_OFF: 0x80,
-	NOTE_ON: 0x90,
-	POLYPHONIC_AFTERTOUCH: 0xA0,
-	CONTROL_CHANGE: 0xB0,
-	PROGRAM_CHANGE: 0xC0,
-	CHANNEL_AFTERTOUCH: 0xD0,
-	PITCH_BEND_CHANGE: 0xE0
-};
+var constants = require('./constants');
 
 var commands = {
 	0x80: {

@@ -2,6 +2,7 @@
 
 var Message = require('./message');
 var Track = require('./track');
+var vlv = require('./vlv');
 
 var constants = {
 	START_OF_FILE: 0x4d546864 // MThd
@@ -78,7 +79,7 @@ Sequence.fromBuffer = function (buffer) {
 		sequence.addTrack(track);
 		offset += 8;
 
-		var delta = parseVLV(buffer);
+		var delta = vlv.fromBuffer(buffer);
 		if (delta > 0x7F) {
 			offset += 2;
 		} else {
@@ -123,18 +124,5 @@ Sequence.fromStream = function (stream) {
 Sequence.fromFile = function (filename) {
 	return Sequence.fromStream(require('fs').createReadStream(filename, 'binary'));
 };
-
-function parseVLV(buffer) {
-	var delta = buffer.readUInt8(0);
-
-	if (delta & 0x80) {
-		// we will have to read two bytes
-		var leftValue = (delta & 0x7F) << 7;
-		var rightValue = buffer.readUInt8(1);
-		return leftValue | rightValue;
-	} else {
-		return delta;
-	}
-}
 
 module.exports = Sequence;

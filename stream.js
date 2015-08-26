@@ -1,20 +1,10 @@
+var constants = require('./constants');
 var events = require('events');
 var Message = require('./message');
 var Sequence = require('./sequence');
 var Track = require('./track');
 var util = require('util');
-
-var constants = {
-	FILE_HEADER_LENGTH: 14,
-	TRACK_HEADER_LENGTH: 8,
-	START_OF_FILE: 0x4d546864, // MThd
-	START_OF_TRACK: 0x4d54726b // MTrk
-};
-
-var fileTypes = {
-	TYPE_0: 0x0, // single track
-	TYPE_1: 0x1 // multi track
-};
+var vlv = require('./vlv');
 
 function MIDIStream(stream) {
 	events.EventEmitter.call(this);
@@ -42,64 +32,68 @@ MIDIStream.prototype.getTicks = function () {
 };
 
 MIDIStream.prototype.addData = function (data) {
-	this.buffer = Buffer.concat([this.buffer, data]);
+	try {
+		this.buffer = Buffer.concat([this.buffer, data]);
 
-	if (!this.header) {
-		if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
-			// We cannot read the header yet.
-			return;
-		}
-
-		this.header = readHeader(this.buffer.slice(0, constants.FILE_HEADER_LENGTH));
-		this.buffer = this.buffer.slice(constants.FILE_HEADER_LENGTH);
-		this.emit('startSequence', this.header);
-	}
-
-	var track = null;
-
-	if (this.readingTrack) {
-		track = this.tracks[this.tracks.length - 1];
-	}
-
-	while (this.buffer.length >= 2) {
-		// we need at least a delta byte and a command byte
-
-		if (!this.readingTrack) {
-			if (this.buffer.length < constants.TRACK_HEADER_LENGTH) {
+		if (!this.header) {
+			if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
 				// We cannot read the header yet.
 				return;
 			}
 
-			track = Track.fromBuffer(this.buffer);
-			this.readingTrack = true;
-			this.tracks.push(track);
-			this.buffer = this.buffer.slice(constants.TRACK_HEADER_LENGTH);
-			this.emit('startTrack', track);
+			this.header = readHeader(this.buffer.slice(0, constants.FILE_HEADER_LENGTH));
+			this.buffer = this.buffer.slice(constants.FILE_HEADER_LENGTH);
+			this.emit('startSequence', this.header);
 		}
 
-		var offset = 0;
-		var delta = parseVLV(this.buffer);
-		if (delta > 0x7F) {
-			offset += 2;
-		} else {
-			offset += 1;
+		var track = null;
+
+		if (this.readingTrack) {
+			track = this.tracks[this.tracks.length - 1];
 		}
 
-		var message = Message.fromBuffer(this.buffer.slice(offset), this.runningStatus);
-		if (!message) {
-			return;
-		}
+		while (this.buffer.length >= 2) {
+			// we need at least a delta byte and a command byte
 
-		track.addEvent(delta, message);
-		this.buffer = this.buffer.slice(offset + message.length);
-		this.emit('event', delta, message);
-		this.runningStatus = message.statusByte;
+			if (!this.readingTrack) {
+				if (this.buffer.length < constants.TRACK_HEADER_LENGTH) {
+					// We cannot read the header yet.
+					return;
+				}
 
-		if (message.isEndOfTrack()) {
-			this.emit('endTrack', track);
-			this.readingTrack = false;
-			this.runningStatus = null;
+				track = Track.fromBuffer(this.buffer);
+				this.readingTrack = true;
+				this.tracks.push(track);
+				this.buffer = this.buffer.slice(constants.TRACK_HEADER_LENGTH);
+				this.emit('startTrack', track);
+			} else {
+				var offset = 0;
+				var delta = vlv.fromBuffer(this.buffer);
+				if (delta > 0x7F) {
+					offset += 2;
+				} else {
+					offset += 1;
+				}
+
+				var message = Message.fromBuffer(this.buffer.slice(offset), this.runningStatus);
+				if (!message) {
+					return;
+				}
+
+				track.addEvent(delta, message);
+				this.buffer = this.buffer.slice(offset + message.length);
+				this.emit('event', delta, message);
+				this.runningStatus = message.statusByte;
+
+				if (message.isEndOfTrack()) {
+					this.emit('endTrack', track);
+					this.readingTrack = false;
+					this.runningStatus = null;
+				}
+			}
 		}
+	} catch (error) {
+		this.emit('error', error);
 	}
 };
 
@@ -121,7 +115,7 @@ function readHeader(buffer) {
 	var noTracks = buffer.readUInt16BE(offset);
 	offset += 2;
 
-	if (fileType === fileTypes.TYPE_0 && noTracks !== 1) {
+	if (fileType === constants.TYPE_0 && noTracks !== 1) {
 		throw new Error('Number of tracks mismatch file type (expected 1 track).');
 	}
 
@@ -132,19 +126,6 @@ function readHeader(buffer) {
 		ticks: ticks,
 		noTracks: noTracks
 	};
-}
-
-function parseVLV(buffer) {
-	var delta = buffer.readUInt8(0);
-
-	if (delta & 0x80) {
-		// we will have to read two bytes
-		var leftValue = (delta & 0x7F) << 7;
-		var rightValue = buffer.readUInt8(1);
-		return leftValue | rightValue;
-	} else {
-		return delta;
-	}
 }
 
 module.exports = MIDIStream;
