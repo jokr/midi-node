@@ -6,13 +6,19 @@
   "scripts": {
     "test": "mocha --check-leaks --bail"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jokr/midi-node.git"
+  },
   "keywords": [
     "midi"
   ],
   "author": "Joel Krebs <joel.krebs@gmail.com> (www.aleaiactaest.ch)",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jokr/midi-node/issues"
+  },
   "devDependencies": {
-    "mocha": "^2.2.5",
-    "nodeunit": "^0.9.1"
+    "mocha": "^2.2.5"
   }
 }

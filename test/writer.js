@@ -35,7 +35,7 @@ describe('writer', function () {
 	it('should write an note off event to a file', function (done) {
 		var file = fs.createWriteStream('./test/test');
 		var writer = new Writer(file);
-		assert.ok(writer.noteOff(0x10, 0x3c, 100, function () {
+		assert.ok(writer.noteOff(0x10, 0, 0x3c, 100, function () {
 			assert.equal(file.bytesWritten, 4);
 			done();
 		}));
@@ -44,7 +44,7 @@ describe('writer', function () {
 	it('should write an note on event to a file', function (done) {
 		var file = fs.createWriteStream('./test/test');
 		var writer = new Writer(file);
-		assert.ok(writer.noteOn(0x10, 0x3c, 100, function () {
+		assert.ok(writer.noteOn(0x10, 1, 0x3c, 100, function () {
 			assert.equal(file.bytesWritten, 4);
 			done();
 		}));
@@ -57,5 +57,19 @@ describe('writer', function () {
 			assert.equal(file.bytesWritten, 4);
 			done();
 		}));
+	});
+
+	it('should write with running status', function (done) {
+		var file = fs.createWriteStream('./test/test');
+		var writer = new Writer(file);
+		assert.ok(writer.noteOn(0x10, 1, 0x3c, 100));
+		assert.ok(writer.noteOn(0x0, 1, 0x3d, 100, function () {
+			assert.equal(file.bytesWritten, 7);
+			done();
+		}));
+	});
+
+	after(function (done) {
+		fs.unlink('./test/test', done);
 	});
 });

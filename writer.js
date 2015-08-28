@@ -1,10 +1,16 @@
 var constants = require('./constants');
 var vlv = require('./vlv');
 
+
+function isInteger(value) {
+	return typeof value === "number" &&
+		isFinite(value) &&
+		Math.floor(value) === value;
+}
+
 function Writer(stream) {
 	this.stream = stream;
 	this.lastEvent = null;
-	this.ongoingTrack = false;
 }
 
 Writer.prototype.startFile = function (fileType, noTracks, ticks, cb) {
@@ -46,21 +52,53 @@ Writer.prototype.startTrack = function (size, cb) {
 };
 
 Writer.prototype.event = function (delta, statusByte, dataBytes, cb) {
-	var eventBuffer = Buffer.concat([
-		vlv.toBuffer(delta),
-		new Buffer([statusByte]),
-		new Buffer(dataBytes)
-	]);
+	if (!isInteger(delta) || delta < 0) {
+		throw new Error('Invalid delta.');
+	}
+
+	if (statusByte < 0x80 || statusByte > 0xFF) {
+		throw new Error('Invalid status byte.');
+	}
+
+	dataBytes.forEach(function (dataByte) {
+		if (dataByte > 0x80) {
+			throw new Error('Invalid data byte.');
+		}
+	});
+
+	var eventBuffer;
+
+	if (this.lastEvent === statusByte) {
+		eventBuffer = Buffer.concat([
+			vlv.toBuffer(delta),
+			new Buffer(dataBytes)
+		]);
+	} else {
+		eventBuffer = Buffer.concat([
+			vlv.toBuffer(delta),
+			new Buffer([statusByte]),
+			new Buffer(dataBytes)
+		]);
+		this.lastEvent = statusByte;
+	}
 
 	return this.stream.write(eventBuffer, cb);
 };
 
-Writer.prototype.noteOff = function (delta, note, velocity, cb) {
-	return this.event(delta, constants.NOTE_OFF, [note, velocity], cb);
+Writer.prototype.noteOff = function (delta, channel, note, velocity, cb) {
+	if (!isInteger(channel) || channel > 15 || channel < 0) {
+		throw new Error('Invalid channel (0-15).');
+	}
+
+	return this.event(delta, constants.NOTE_OFF | channel, [note, velocity], cb);
 };
 
-Writer.prototype.noteOn = function (delta, note, velocity, cb) {
-	return this.event(delta, constants.NOTE_ON, [note, velocity], cb);
+Writer.prototype.noteOn = function (delta, channel, note, velocity, cb) {
+	if (!isInteger(channel) || channel > 15 || channel < 0) {
+		throw new Error('Invalid channel (0-15).');
+	}
+
+	return this.event(delta, constants.NOTE_ON | channel, [note, velocity], cb);
 };
 
 Writer.prototype.endOfTrack = function (delta, cb) {

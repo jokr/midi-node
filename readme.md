@@ -12,16 +12,26 @@ The library supports three major types of MIDI structures:
 
 These can all be parsed from a [Buffer](https://nodejs.org/api/buffer.html).
 
-### Message
+### Parsing a Message
 
-    var midi = require('midi');
+    var midi = require('midi-node');
     var noteOff = new Buffer('803c00', 'hex'); // Channel 0, middle C4, 0 velocity
-    var message = midi.Message.parse(noteOff);
+    var message = midi.Message.fromBuffer(noteOff);
     
     message.getStatus(); // 0x80
     message.getCommand(); // "NOTE_OFF"
     message.getChannel(); // 0
     message.getData(); // [0x3c, 0x00]
+    
+### Writing a Message
+
+    var midi = require('midi-node');
+    var stream = <something writable>;
+    var writer = new midi.Writer(stream);
+		
+    writer.startFile(0, 1, 128);
+    writer.startTrack();
+    writer.noteOn(0, 0, 0x3c, 100); // Channel 0, middle C4, 100 velocity
 
 ## Resources
 
