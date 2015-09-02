@@ -35,7 +35,11 @@ MIDIStream.prototype.addData = function (data) {
 	try {
 		this.buffer = Buffer.concat([this.buffer, data]);
 
-		if (!this.header) {
+		if (this.buffer.length < 4) {
+			return;
+		}
+
+		if (this.buffer.readUInt32BE() === constants.START_OF_FILE) {
 			if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
 				// We cannot read the header yet.
 				return;
@@ -43,7 +47,7 @@ MIDIStream.prototype.addData = function (data) {
 
 			this.header = readHeader(this.buffer.slice(0, constants.FILE_HEADER_LENGTH));
 			this.buffer = this.buffer.slice(constants.FILE_HEADER_LENGTH);
-			this.emit('startSequence', this.header);
+			this.emit('startFile', this.header);
 		}
 
 		var track = null;

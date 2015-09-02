@@ -19,7 +19,7 @@ describe('stream opens a sequence', function () {
 	it('too few bytes do nothing but get buffered', function () {
 		var stream = new DummyStream();
 		var midiStream = new MIDIStream(stream);
-		midiStream.on('startSequence', function () {
+		midiStream.on('startFile', function () {
 			assert.fail('should not have triggered');
 		});
 		stream.write('4d546864');
@@ -29,7 +29,7 @@ describe('stream opens a sequence', function () {
 	it('should parse header through multiple writes', function (done) {
 		var stream = new DummyStream();
 		var midiStream = new MIDIStream(stream);
-		midiStream.on('startSequence', function (header) {
+		midiStream.on('startFile', function (header) {
 			assert.equal(header.fileType, 0);
 			assert.equal(header.noTracks, 1);
 			assert.equal(header.ticks, 128);
@@ -40,7 +40,7 @@ describe('stream opens a sequence', function () {
 		assert.equal(midiStream.buffer.length, 0);
 	});
 
-	it('should parse start of track', function (done) {
+	it('should parse start of track after file start', function (done) {
 		var stream = new DummyStream();
 		var midiStream = new MIDIStream(stream);
 		midiStream.on('startTrack', function (track) {
@@ -48,6 +48,18 @@ describe('stream opens a sequence', function () {
 			done();
 		});
 		stream.write('4d54686400000006000000010080');
+		stream.write('4d54726b');
+		stream.write('00000735');
+		assert.equal(midiStream.buffer.length, 0);
+	});
+
+	it('should parse start of track after file start', function (done) {
+		var stream = new DummyStream();
+		var midiStream = new MIDIStream(stream);
+		midiStream.on('startTrack', function (track) {
+			assert.equal(track.length(), 1845 + 8);
+			done();
+		});
 		stream.write('4d54726b');
 		stream.write('00000735');
 		assert.equal(midiStream.buffer.length, 0);
