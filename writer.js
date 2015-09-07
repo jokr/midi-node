@@ -31,7 +31,7 @@ Writer.prototype.startFile = function (fileType, noTracks, ticks, cb) {
 	}
 
 	var buffer = new Buffer(constants.FILE_HEADER_LENGTH);
-	buffer.writeInt32BE(constants.START_OF_FILE);
+	buffer.writeInt32BE(constants.START_OF_FILE, 0);
 	buffer.writeInt32BE(0x6, 4);
 	buffer.writeInt16BE(fileType, 8);
 	buffer.writeInt16BE(noTracks, 10);
@@ -42,7 +42,7 @@ Writer.prototype.startFile = function (fileType, noTracks, ticks, cb) {
 
 Writer.prototype.startTrack = function (size, cb) {
 	var buffer = new Buffer(constants.TRACK_HEADER_LENGTH);
-	buffer.writeInt32BE(constants.START_OF_TRACK);
+	buffer.writeInt32BE(constants.START_OF_TRACK, 0);
 	if (!size) {
 		size = 0;
 	}
