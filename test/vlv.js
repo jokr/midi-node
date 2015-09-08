@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var vlv = require('../vlv');
 
@@ -9,7 +11,7 @@ describe('variable length values', function () {
 
 	it('should parse a variable length value larger than 0x80', function () {
 		var buffer = new Buffer('8253', 'hex'); // 1000 0010 0101 0011
-		assert.equal(vlv.fromBuffer(buffer), 0x153)
+		assert.equal(vlv.fromBuffer(buffer), 0x153);
 	});
 
 	it('should write a variable length value smaller than 0x80', function () {

@@ -1,6 +1,7 @@
+'use strict';
+
 var constants = require('./constants');
 var vlv = require('./vlv');
-
 
 function isInteger(value) {
 	return typeof value === "number" &&
@@ -102,7 +103,7 @@ Writer.prototype.noteOn = function (delta, channel, note, velocity, cb) {
 };
 
 Writer.prototype.endOfTrack = function (delta, cb) {
-	return this.event(delta, constants.META_EVENT, [constants.END_OF_TRACK, 0x00], cb)
+	return this.event(delta, constants.META_EVENT, [constants.END_OF_TRACK, 0x00], cb);
 };
 
 module.exports = Writer;

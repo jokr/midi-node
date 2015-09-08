@@ -131,8 +131,8 @@ Message.fromBuffer = function (buffer, runningStatus) {
 	}
 
 	var data = [];
-	for(; dataOffset < length; dataOffset++) {
-		data.push(buffer[dataOffset])
+	for (; dataOffset < length; dataOffset++) {
+		data.push(buffer[dataOffset]);
 	}
 
 	return new Message(status, data, length);

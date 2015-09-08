@@ -23,6 +23,33 @@ These can all be parsed from a [Buffer](https://nodejs.org/api/buffer.html).
     message.getChannel(); // 0
     message.getData(); // [0x3c, 0x00]
     
+### Parsing messages from a stream
+
+Anything that emits a 'data' event can be used as a stream.
+
+    var midi = require('midi-node');
+    var input = <something readable>;
+    var stream = new midi.Stream(input);
+    
+    stream.on('startTrack', function (track) {
+        // do something with the track
+    });
+    
+    stream.on('event', function (delta, message) {
+        message.getStatus(); // 0x80
+        message.getCommand(); // "NOTE_OFF"
+        message.getChannel(); // 0
+        message.getData(); // [0x3c, 0x00]
+    });
+    
+The following events are emitted:
+
+* `startFile`, parameter is the file header
+* `startTrack`, parameter is the track object
+* `event`, parameters are delta and message
+* `endTrack`, parameter is the track object
+* `error`, parameter is the error object
+    
 ### Writing a Message
 
     var midi = require('midi-node');

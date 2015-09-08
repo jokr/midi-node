@@ -112,7 +112,7 @@ Sequence.fromStream = function (stream) {
 			} catch (error) {
 				reject(error);
 			}
-		})
+		});
 	});
 };
 

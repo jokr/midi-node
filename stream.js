@@ -1,3 +1,5 @@
+'use strict';
+
 var constants = require('./constants');
 var events = require('events');
 var Message = require('./message');
@@ -14,7 +16,7 @@ function MIDIStream(stream) {
 	this.readingTrack = false;
 	this.runningStatus = null;
 
-	stream.on('data', this.addData.bind(this))
+	stream.on('data', this.addData.bind(this));
 }
 
 util.inherits(MIDIStream, events.EventEmitter);

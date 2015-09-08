@@ -41,7 +41,7 @@ Track.prototype.addEvent = function (delta, message) {
  *
  * @returns {number}
  */
-Track.prototype.length = function() {
+Track.prototype.length = function () {
 	return this.size + 8;
 };
 

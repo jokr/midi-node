@@ -1,3 +1,5 @@
+'use strict';
+
 exports.fromBuffer = function (buffer) {
 	var delta = buffer.readUInt8(0);
 
