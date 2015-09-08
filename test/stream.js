@@ -84,6 +84,37 @@ describe('stream parses full track', function () {
 		assert.equal(midiStream.buffer.length, 1);
 	});
 
+	it('should parse note on', function () {
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 0);
+			assert.equal(message.getCommand(), 'NOTE_ON', 'Command did not match.');
+			assert.equal(message.getChannel(), 0, 'Channel should be 0.');
+			assert.deepEqual(message.getData(), [0x3c, 0x64], 'Data bytes did not match.');
+			assert.equal(message.isChannelMessage(), true, 'Should be channel message.');
+			assert.equal(message.isSystemMessage(), false, 'Should not be system message.');
+			assert.equal(message.isEndOfTrack(), false, 'Should not be end of track.');
+			assert.equal(message.length, 3, 'Length did not match.');
+		});
+		stream.write('00903c64');
+		assert.equal(midiStream.buffer.length, 0);
+	});
+
+	it('should parse note on with running status', function () {
+		stream.write('00903c64');
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 0);
+			assert.equal(message.getCommand(), 'NOTE_ON', 'Command did not match.');
+			assert.equal(message.getChannel(), 0, 'Channel should be 0.');
+			assert.deepEqual(message.getData(), [0x3c, 0x64], 'Data bytes did not match.');
+			assert.equal(message.isChannelMessage(), true, 'Should be channel message.');
+			assert.equal(message.isSystemMessage(), false, 'Should not be system message.');
+			assert.equal(message.isEndOfTrack(), false, 'Should not be end of track.');
+			assert.equal(message.length, 2, 'Length did not match.');
+		});
+		stream.write('003c64');
+		assert.equal(midiStream.buffer.length, 0);
+	});
+
 	it('should parse a meta event', function (done) {
 		midiStream.on('event', function (delta, message) {
 			assert.equal(delta, 0);
@@ -91,7 +122,7 @@ describe('stream parses full track', function () {
 			assert.equal(message.getChannel(), null, 'Channel should be null.');
 			assert.deepEqual(message.getData(), [0x21, 0x01, 0x00], 'Data bytes did not match.');
 			assert.equal(message.isChannelMessage(), false, 'Should not be channel message.');
-			assert.equal(message.isSystemMessage(), true, 'Should not be system message.');
+			assert.equal(message.isSystemMessage(), true, 'Should be system message.');
 			assert.equal(message.isEndOfTrack(), false, 'Should not be end of track.');
 			assert.equal(message.length, 4, 'Length did not match.');
 			done();
@@ -107,7 +138,7 @@ describe('stream parses full track', function () {
 			assert.equal(message.getChannel(), null, 'Channel should be null.');
 			assert.deepEqual(message.getData(), [0x03, 0x04, 0x4C, 0x65, 0x61, 0x64], 'Data bytes did not match.');
 			assert.equal(message.isChannelMessage(), false, 'Should not be channel message.');
-			assert.equal(message.isSystemMessage(), true, 'Should not be system message.');
+			assert.equal(message.isSystemMessage(), true, 'Should be system message.');
 			assert.equal(message.isEndOfTrack(), false, 'Should not be end of track.');
 			assert.equal(message.length, 7, 'Length did not match.');
 		});
@@ -122,7 +153,7 @@ describe('stream parses full track', function () {
 			assert.equal(message.getChannel(), null, 'Channel should be null.');
 			assert.deepEqual(message.getData(), [0x2F, 0x00], 'Data bytes did not match.');
 			assert.equal(message.isChannelMessage(), false, 'Should not be channel message.');
-			assert.equal(message.isSystemMessage(), true, 'Should not be system message.');
+			assert.equal(message.isSystemMessage(), true, 'Should be system message.');
 			assert.equal(message.isEndOfTrack(), true, 'Should be end of track.');
 			assert.equal(message.length, 3, 'Length did not match.');
 			if (receivedOneEvent) {

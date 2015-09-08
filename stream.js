@@ -36,25 +36,24 @@ MIDIStream.prototype.getTicks = function () {
 MIDIStream.prototype.addData = function (data) {
 	try {
 		this.buffer = Buffer.concat([this.buffer, data]);
+		var track = null;
 
-		if (this.buffer.length < 4) {
-			return;
-		}
-
-		if (this.buffer.readUInt32BE(0) === constants.START_OF_FILE) {
-			if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
-				// We cannot read the header yet.
+		if (!this.readingTrack) {
+			if (this.buffer.length < 4) {
 				return;
 			}
 
-			this.header = readHeader(this.buffer.slice(0, constants.FILE_HEADER_LENGTH));
-			this.buffer = this.buffer.slice(constants.FILE_HEADER_LENGTH);
-			this.emit('startFile', this.header);
-		}
+			if (this.buffer.readUInt32BE(0) === constants.START_OF_FILE) {
+				if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
+					// We cannot read the header yet.
+					return;
+				}
 
-		var track = null;
-
-		if (this.readingTrack) {
+				this.header = readHeader(this.buffer.slice(0, constants.FILE_HEADER_LENGTH));
+				this.buffer = this.buffer.slice(constants.FILE_HEADER_LENGTH);
+				this.emit('startFile', this.header);
+			}
+		} else {
 			track = this.tracks[this.tracks.length - 1];
 		}
 
