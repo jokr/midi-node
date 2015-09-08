@@ -35,5 +35,5 @@ These can all be parsed from a [Buffer](https://nodejs.org/api/buffer.html).
 
 ## Resources
 
-http://www.midi.org/techspecs/midimessages.php
+[http://www.midi.org/techspecs/midimessages.php](http://www.midi.org/techspecs/midimessages.php)
 
