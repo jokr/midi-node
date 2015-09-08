@@ -14,33 +14,37 @@ These can all be parsed from a [Buffer](https://nodejs.org/api/buffer.html).
 
 ### Parsing a Message
 
-    var midi = require('midi-node');
-    var noteOff = new Buffer('803c00', 'hex'); // Channel 0, middle C4, 0 velocity
-    var message = midi.Message.fromBuffer(noteOff);
-    
-    message.getStatus(); // 0x80
-    message.getCommand(); // "NOTE_OFF"
-    message.getChannel(); // 0
-    message.getData(); // [0x3c, 0x00]
+```js
+var midi = require('midi-node');
+var noteOff = new Buffer('803c00', 'hex'); // Channel 0, middle C4, 0 velocity
+var message = midi.Message.fromBuffer(noteOff);
+
+message.getStatus(); // 0x80
+message.getCommand(); // "NOTE_OFF"
+message.getChannel(); // 0
+message.getData(); // [0x3c, 0x00]
+```
     
 ### Parsing messages from a stream
 
 Anything that emits a 'data' event can be used as a stream.
 
-    var midi = require('midi-node');
-    var input = <something readable>;
-    var stream = new midi.Stream(input);
-    
-    stream.on('startTrack', function (track) {
-        // do something with the track
-    });
-    
-    stream.on('event', function (delta, message) {
-        message.getStatus(); // 0x80
-        message.getCommand(); // "NOTE_OFF"
-        message.getChannel(); // 0
-        message.getData(); // [0x3c, 0x00]
-    });
+```js
+var midi = require('midi-node');
+var input = <something readable>;
+var stream = new midi.Stream(input);
+
+stream.on('startTrack', function (track) {
+		// do something with the track
+});
+
+stream.on('event', function (delta, message) {
+		message.getStatus(); // 0x80
+		message.getCommand(); // "NOTE_OFF"
+		message.getChannel(); // 0
+		message.getData(); // [0x3c, 0x00]
+});
+```
     
 The following events are emitted:
 
@@ -52,13 +56,15 @@ The following events are emitted:
     
 ### Writing a Message
 
-    var midi = require('midi-node');
-    var stream = <something writable>;
-    var writer = new midi.Writer(stream);
-		
-    writer.startFile(0, 1, 128);
-    writer.startTrack();
-    writer.noteOn(0, 0, 0x3c, 100); // Channel 0, middle C4, 100 velocity
+```js
+var midi = require('midi-node');
+var stream = <something writable>;
+var writer = new midi.Writer(stream);
+
+writer.startFile(0, 1, 128);
+writer.startTrack();
+writer.noteOn(0, 0, 0x3c, 100); // Channel 0, middle C4, 100 velocity
+```
 
 ## Resources
 
