@@ -39,7 +39,7 @@ MIDIStream.prototype.addData = function (data) {
 			return;
 		}
 
-		if (this.buffer.readUInt32BE() === constants.START_OF_FILE) {
+		if (this.buffer.readUInt32BE(0) === constants.START_OF_FILE) {
 			if (this.buffer.length < constants.FILE_HEADER_LENGTH) {
 				// We cannot read the header yet.
 				return;
