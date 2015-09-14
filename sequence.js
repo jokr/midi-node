@@ -79,20 +79,25 @@ Sequence.fromBuffer = function (buffer) {
 		sequence.addTrack(track);
 		offset += 8;
 
-		var delta = vlv.fromBuffer(buffer);
-		if (delta > 0x7F) {
-			offset += 2;
-		} else {
-			offset += 1;
-		}
+		while (buffer.length > 0) {
+			var delta = vlv.fromBuffer(buffer);
+			if (delta > 0x7F) {
+				offset += 2;
+			} else {
+				offset += 1;
+			}
 
-		var message = Message.fromBuffer(buffer.slice(offset));
-		if (!message) {
-			throw new Error("Unexpected end of buffer.");
-		}
+			var message = Message.fromBuffer(buffer.slice(offset));
+			if (!message) {
+				throw new Error("Unexpected end of buffer.");
+			}
+			track.addEvent(delta, message);
+			offset += message.length;
 
-		track.addEvent(delta, message);
-		offset += message.length;
+			if (message.isEndOfTrack()) {
+				break;
+			}
+		}
 	}
 
 	return sequence;
