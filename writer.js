@@ -61,12 +61,6 @@ Writer.prototype.event = function (delta, statusByte, dataBytes, cb) {
 		throw new Error('Invalid status byte.');
 	}
 
-	dataBytes.forEach(function (dataByte) {
-		if (dataByte > 0x80) {
-			throw new Error('Invalid data byte.');
-		}
-	});
-
 	var eventBuffer;
 
 	if (this.lastEvent === statusByte) {
