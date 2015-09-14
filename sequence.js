@@ -82,7 +82,7 @@ Sequence.fromBuffer = function (buffer) {
 		var runningStatus = null;
 
 		while (buffer.length > 0) {
-			var delta = vlv.fromBuffer(buffer);
+			var delta = vlv.fromBuffer(buffer.slice(offset));
 			if (delta > 0x7F) {
 				offset += 2;
 			} else {
