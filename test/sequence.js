@@ -37,4 +37,30 @@ describe('parse a sequence from a buffer', function () {
 		assert.equal(track.events.length, 2, "Expected two events.");
 		assert.equal(track.complete, true, "Expected track to be complete.");
 	});
+
+	it('should parse a sequence with 2 tracks and multiple events', function () {
+		var midi = new Buffer(
+			'4d54686400000006000100020080' + // File header
+			'4d54726b0000000c' + // track header
+			'00ff580404026008' + // tempo set to 105 bpm
+			'00ff2f00' + // End of track
+			'4d54726b00000004' + // track header
+			'00ff2f00', // End of track
+			'hex');
+
+		var sequence = Sequence.fromBuffer(midi);
+		assert.equal(sequence.getTracks().length, 2, "Expected two tracks.");
+		assert.equal(sequence.getFileType(), 1, "Expected file type 1.");
+		assert.equal(sequence.getTicks(), 128, "Expected 128 ticks.");
+
+		var track = sequence.getTracks()[0];
+		assert.equal(track.size, 12, "Expected track size 12.");
+		assert.equal(track.events.length, 2, "Expected two events.");
+		assert.equal(track.complete, true, "Expected track to be complete.");
+
+		track = sequence.getTracks()[1];
+		assert.equal(track.size, 4, "Expected track size 4.");
+		assert.equal(track.events.length, 1, "Expected one event.");
+		assert.equal(track.complete, true, "Expected track to be complete.");
+	});
 });
