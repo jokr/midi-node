@@ -79,6 +79,8 @@ Sequence.fromBuffer = function (buffer) {
 		sequence.addTrack(track);
 		offset += 8;
 
+		var runningStatus = null;
+
 		while (buffer.length > 0) {
 			var delta = vlv.fromBuffer(buffer);
 			if (delta > 0x7F) {
@@ -87,12 +89,13 @@ Sequence.fromBuffer = function (buffer) {
 				offset += 1;
 			}
 
-			var message = Message.fromBuffer(buffer.slice(offset));
+			var message = Message.fromBuffer(buffer.slice(offset), runningStatus);
 			if (!message) {
 				throw new Error("Unexpected end of buffer.");
 			}
 			track.addEvent(delta, message);
 			offset += message.length;
+			runningStatus = message.statusByte;
 
 			if (message.isEndOfTrack()) {
 				break;
