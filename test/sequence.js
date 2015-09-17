@@ -84,3 +84,18 @@ describe('parse a sequence from a buffer', function () {
 		assert.equal(track.complete, true, "Expected track to be complete.");
 	});
 });
+
+describe('parse a sequence from a file', function () {
+	it('should parse a sequence with 2 tracks and multiple events', function (done) {
+		Sequence.fromFile('test/supermario.mid', function (error, sequence) {
+			assert.ifError(error);
+			assert.equal(sequence.getTicks(), 96, 'Expected 96 ticks.');
+			assert.equal(sequence.getTracks().length, 1, 'Expected 1 track.');
+
+			var track = sequence.getTracks()[0];
+			assert.equal(track.complete, true, 'Expected complete track.');
+			assert.equal(track.events.length, 604, 'Expected 604 events.');
+			done();
+		});
+	});
+});

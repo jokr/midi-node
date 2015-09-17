@@ -106,31 +106,14 @@ Sequence.fromBuffer = function (buffer) {
 	return sequence;
 };
 
-/**
- * Returns a promise of a midi sequence read directly from a stream.
- * @param stream
- * @see https://nodejs.org/api/stream.html
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
- */
-Sequence.fromStream = function (stream) {
-	return new Promise(function (resolve, reject) {
-		stream.on('data', function (chunk) {
-			try {
-				resolve(Sequence.fromBuffer(chunk));
-			} catch (error) {
-				reject(error);
-			}
-		});
+Sequence.fromFile = function (filename, cb) {
+	require('fs').readFile(filename, function (error, data) {
+		if (error) {
+			cb(error, null);
+			return;
+		}
+		cb(null, Sequence.fromBuffer(data));
 	});
-};
-
-/**
- * Returns a promise of a midi sequence read directly from a file.
- * @param filename
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
- */
-Sequence.fromFile = function (filename) {
-	return Sequence.fromStream(require('fs').createReadStream(filename, 'binary'));
 };
 
 module.exports = Sequence;

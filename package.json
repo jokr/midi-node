@@ -1,6 +1,6 @@
 {
   "name": "midi-node",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A midi parser and writer.",
   "main": "index.js",
   "scripts": {
