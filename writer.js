@@ -15,14 +15,6 @@ function Writer(stream) {
 }
 
 Writer.prototype.startFile = function (fileType, noTracks, ticks, cb) {
-	if (fileType !== 0 && fileType !== 1) {
-		throw new Error('Invalid file type.');
-	}
-
-	if (fileType === 0 && noTracks !== 1) {
-		throw new Error('Expect only one track for file type 0.');
-	}
-
 	if (noTracks < 1) {
 		throw new Error('Must at least have one track.');
 	}
