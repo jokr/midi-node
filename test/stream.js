@@ -175,11 +175,29 @@ describe('stream parses full track', function () {
 		assert.equal(midiStream.buffer.length, 0);
 	});
 
-	it('should parse a long meta with large delta', function (done) {
+	it('should parse a long meta with different deltas', function (done) {
 		midiStream.on('event', function (delta, message) {
 			assert.equal(delta, 2069397);
-			done();
 		});
 		stream.write('fea715ff031853657175656e63656420627920502e4a2e204261726e6573');
+		midiStream.removeAllListeners();
+
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 16383);
+		});
+		stream.write('ff7fff031853657175656e63656420627920502e4a2e204261726e6573');
+		midiStream.removeAllListeners();
+
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 2097151);
+		});
+		stream.write('ffff7fff031853657175656e63656420627920502e4a2e204261726e6573');
+		midiStream.removeAllListeners();
+
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 268435455);
+			done();
+		});
+		stream.write('ffffff7fff031853657175656e63656420627920502e4a2e204261726e6573');
 	});
 });

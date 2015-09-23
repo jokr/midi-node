@@ -83,13 +83,9 @@ Sequence.fromBuffer = function (buffer) {
 
 		while (buffer.length > 0) {
 			var delta = vlv.fromBuffer(buffer.slice(offset));
-			// TODO fix this stuff
-			if (delta > 0x3FFF) {
-				offset += 3;
-			} else if (delta > 0x7F) {
-				offset += 2;
-			} else {
-				offset += 1;
+			offset += 1;
+			if (delta) {
+				offset += Math.floor(Math.log(delta) / Math.log(0x80));
 			}
 
 			var message = Message.fromBuffer(buffer.slice(offset), runningStatus);

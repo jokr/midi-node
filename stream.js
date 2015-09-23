@@ -74,12 +74,9 @@ MIDIStream.prototype.addData = function (data) {
 			} else {
 				var offset = 0;
 				var delta = vlv.fromBuffer(this.buffer);
-				if (delta > 0x3FFF) {
-					offset += 3;
-				} else if (delta > 0x7F) {
-					offset += 2;
-				} else {
-					offset += 1;
+				offset += 1;
+				if (delta) {
+					offset += Math.floor(Math.log(delta) / Math.log(0x80));
 				}
 
 				var message = Message.fromBuffer(this.buffer.slice(offset), this.runningStatus);
