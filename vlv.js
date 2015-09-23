@@ -1,16 +1,24 @@
 'use strict';
 
 exports.fromBuffer = function (buffer) {
-	var delta = buffer.readUInt8(0);
+	var offset = 0;
+	var value = 0;
+	var byte;
 
-	if (delta & 0x80) {
-		// we will have to read two bytes
-		var leftValue = (delta & 0x7F) << 7;
-		var rightValue = buffer.readUInt8(1);
-		return leftValue | rightValue;
-	} else {
-		return delta;
-	}
+	do {
+		if (offset >= buffer.length) {
+			throw new Error('Buffer not long enough for vlv.');
+		}
+		byte = buffer.readUInt8(offset);
+		value |= byte & 0x7F;
+
+		if (byte & 0x80) {
+			value = value << 7;
+			offset++;
+		}
+	} while (byte & 0x80);
+
+	return value;
 };
 
 exports.toBuffer = function (value) {

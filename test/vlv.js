@@ -28,4 +28,18 @@ describe('variable length values', function () {
 		assert.equal(buffer[0], 0x82);
 		assert.equal(buffer[1], 0x53);
 	});
+
+	it('should parse a long variable length value', function () {
+		var value = 1474895;
+		var buffer = vlv.toBuffer(value);
+		assert.equal(buffer.length, 3);
+		assert.equal(buffer[0], 0xDA);
+		assert.equal(buffer[1], 0x82);
+		assert.equal(buffer[2], 0x4F);
+	});
+
+	it('should write a long variable length value', function () {
+		var buffer = new Buffer('DA824F', 'hex');
+		assert.equal(vlv.fromBuffer(buffer), 1474895);
+	});
 });

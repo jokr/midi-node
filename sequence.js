@@ -83,7 +83,9 @@ Sequence.fromBuffer = function (buffer) {
 
 		while (buffer.length > 0) {
 			var delta = vlv.fromBuffer(buffer.slice(offset));
-			if (delta > 0x7F) {
+			if (delta > 0x3FFF) {
+				offset += 3;
+			} else if (delta > 0x7F) {
 				offset += 2;
 			} else {
 				offset += 1;
