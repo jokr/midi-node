@@ -174,4 +174,12 @@ describe('stream parses full track', function () {
 		stream.write('0AFF2F00'); // delta=10, meta=2F (end), 0 data bytes
 		assert.equal(midiStream.buffer.length, 0);
 	});
+
+	it('should parse a long meta with large delta', function (done) {
+		midiStream.on('event', function (delta, message) {
+			assert.equal(delta, 2069397);
+			done();
+		});
+		stream.write('fea715ff031853657175656e63656420627920502e4a2e204261726e6573');
+	});
 });
